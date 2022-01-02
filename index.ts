@@ -224,7 +224,7 @@ const fetchData = async (i: number) => {
       },
       items,
       5,
-      10
+      1000
     );
     // @ts-ignore
     terraforms = terraforms.concat(nextTerraforms);

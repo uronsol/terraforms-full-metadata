@@ -6,6 +6,7 @@
   "author": "uronsol <uronsolana@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "classes": "ts-node supplemental/createClasses.ts",
     "compile-contract-types": "typechain --target ethers-v5 --out-dir './contracts/types' './contracts/*.json'",
     "lint": "eslint --ext .ts,.tsx --fix",
     "normalize": "ts-node normalize.ts",
