@@ -8,6 +8,7 @@
   "scripts": {
     "compile-contract-types": "typechain --target ethers-v5 --out-dir './contracts/types' './contracts/*.json'",
     "lint": "eslint --ext .ts,.tsx --fix",
+    "normalize": "ts-node normalize.ts",
     "postinstall": "yarn compile-contract-types",
     "prettier": "prettier --write .",
     "start": "ts-node index.ts"

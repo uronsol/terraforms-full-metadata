@@ -29,6 +29,8 @@ export interface NormalizedTerraform {
   xCoordinate: string;
   yCoordinate: string;
   zoneName: string;
+  zoneColors: string[];
+  characterSet: string[];
 }
 
 (async () => {
@@ -90,6 +92,8 @@ export interface NormalizedTerraform {
       xCoordinate,
       yCoordinate,
       zoneName,
+      zoneColors,
+      characterSet,
     } = supplementalData;
 
     terraforms.push({
@@ -107,6 +111,8 @@ export interface NormalizedTerraform {
       mode,
       chroma,
       questionMarks,
+      zoneColors,
+      characterSet,
     });
     console.log(`Processed Terraform #${tokenId}`);
 
