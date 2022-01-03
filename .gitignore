@@ -31,3 +31,5 @@ node_modules
 # Project
 .env
 classes.txt
+subgraphClasses.txt
+

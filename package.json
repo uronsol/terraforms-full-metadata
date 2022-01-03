@@ -10,6 +10,7 @@
     "compile-contract-types": "typechain --target ethers-v5 --out-dir './contracts/types' './contracts/*.json'",
     "lint": "eslint --ext .ts,.tsx --fix",
     "normalize": "ts-node normalize.ts",
+    "subgraph": "ts-node supplemental/querySubgraph.ts",
     "postinstall": "yarn compile-contract-types",
     "prettier": "prettier --write .",
     "start": "ts-node index.ts"
@@ -20,8 +21,11 @@
     "@ethersproject/providers": "^5.5.1",
     "@ethersproject/units": "^5.5.0",
     "convert-csv-to-json": "^1.3.1",
+    "cross-fetch": "^3.1.4",
     "dotenv": "^10.0.0",
-    "json2csv": "^5.0.6"
+    "graphql": "16.2.0",
+    "json2csv": "^5.0.6",
+    "urql": "2.0.6"
   },
   "devDependencies": {
     "@typechain/ethers-v5": "^8.0.5",
