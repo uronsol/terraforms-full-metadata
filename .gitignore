@@ -32,4 +32,5 @@ node_modules
 .env
 classes.txt
 subgraphClasses.txt
+subgraphClasses.json
 

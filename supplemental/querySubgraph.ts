@@ -53,7 +53,7 @@ const delay = (delay: number) =>
 
 (async () => {
   const client = createClient({
-    url: 'https://api.studio.thegraph.com/query/17746/terraforms/0.0.21',
+    url: 'https://api.thegraph.com/subgraphs/name/uronsol/terraforms',
   });
 
   const query = `
