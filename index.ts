@@ -3,7 +3,7 @@ import { Contract } from '@ethersproject/contracts';
 import Terraforms_ABI from './contracts/Terraforms.json';
 import ERC721_METADATA_ABI from './contracts/ERC721Metadata.json';
 import ERC20_ABI from './contracts/ERC20.json';
-import { parseBigNumber } from './util';
+import { asyncForEach, delayMS, parseBigNumber, split } from './util';
 import { Parser } from 'json2csv';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import fs from 'fs';
@@ -11,7 +11,9 @@ import fs from 'fs';
 dotenv.config();
 
 const provider = new JsonRpcProvider(process.env.RPC_ENDPOINT);
+
 let terraforms: Array<NormalizedTerraform> = [];
+const failedIndexes: Array<number> = [];
 
 export const TERRAFORMS_ADDRESS = '0x4E1f41613c9084FdB9E34E11fAE9412427480e56';
 
@@ -53,28 +55,6 @@ const write = (terraforms: NormalizedTerraform[]) => {
     'outputKeyedMinimized.json',
     JSON.stringify(keyedTerraforms)
   );
-};
-
-async function asyncForEach(array, callback) {
-  for (let index = 0; index < array.length; index++) {
-    await callback(array[index], index, array);
-  }
-}
-
-function split(arr, n) {
-  const res = [];
-  while (arr.length) {
-    res.push(arr.splice(0, n));
-  }
-  return res;
-}
-
-const delayMS = (t = 200) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(t);
-    }, t);
-  });
 };
 
 const throttledPromises = (
@@ -218,9 +198,12 @@ const fetchData = async (i: number) => {
     // @ts-ignore
     const nextTerraforms = await throttledPromises(
       async (i: number) => {
-        const data = await fetchData(i);
-        // console.log(data);
-        return data;
+        try {
+          const data = await fetchData(i);
+          return data;
+        } catch {
+          failedIndexes.push(i);
+        }
       },
       items,
       5,
@@ -228,6 +211,23 @@ const fetchData = async (i: number) => {
     );
     // @ts-ignore
     terraforms = terraforms.concat(nextTerraforms);
+
+    while (failedIndexes.length > 0) {
+      const terraformIndex = failedIndexes.pop();
+      try {
+        const terraform = await fetchData(terraformIndex);
+        if (!terraform) throw new Error('Must fetch terraform');
+        terraforms = terraforms.concat();
+      } catch {
+        failedIndexes.push(terraformIndex);
+      }
+    }
+
+    if (terraforms.length !== totalSupply) {
+      console.log('LENGTHS DONT MATCH');
+      console.log(`local: ${terraforms.length}`);
+      console.log(`supply: ${totalSupply}`);
+    }
     write(terraforms);
     console.log('Job complete!');
   } catch (err) {
