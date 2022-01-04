@@ -33,4 +33,7 @@ node_modules
 classes.txt
 subgraphClasses.txt
 subgraphClasses.json
-
+output.csv
+output.json
+outputKeyed.json
+outputKeyedMinimized.json
