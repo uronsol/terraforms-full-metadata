@@ -2,11 +2,16 @@ import dotenv from 'dotenv';
 import { Contract } from '@ethersproject/contracts';
 import Terraforms_ABI from './contracts/Terraforms.json';
 import ERC721_METADATA_ABI from './contracts/ERC721Metadata.json';
-import ERC20_ABI from './contracts/ERC20.json';
-import { asyncForEach, delayMS, parseBigNumber, split } from './util';
-import { Parser } from 'json2csv';
+import {
+  asyncForEach,
+  delayMS,
+  normalizeTokenData,
+  parseBigNumber,
+  split,
+} from './util';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import fs from 'fs';
+import { NormalizedTerraform } from './types';
 
 dotenv.config();
 
@@ -17,43 +22,10 @@ const failedIndexes: Array<number> = [];
 
 export const TERRAFORMS_ADDRESS = '0x4E1f41613c9084FdB9E34E11fAE9412427480e56';
 
-const write = (terraforms: NormalizedTerraform[]) => {
-  const fields = [
-    'tokenId',
-    'level',
-    'biome',
-    'elevation',
-    'zoneName',
-    'xCoordinate',
-    'yCoordinate',
-    'seedValue',
-    'structureSpaceX',
-    'structureSpaceY',
-    'structureSpaceZ',
-    'chroma',
-    'mode',
-    'questionMarks',
-  ];
-
-  const json2csvParser = new Parser({ fields });
-  const csv = json2csvParser.parse(terraforms);
-  fs.writeFileSync('output.csv', csv);
-
-  fs.writeFileSync('output.json', JSON.stringify(terraforms, null, 2));
-
-  const keyedTerraforms = terraforms.reduce((obj, item) => {
-    obj[item.tokenId] = item;
-    return obj;
-  }, {});
-
+const write = (terraform: NormalizedTerraform) => {
   fs.writeFileSync(
-    'outputKeyed.json',
-    JSON.stringify(keyedTerraforms, null, 2)
-  );
-
-  fs.writeFileSync(
-    'outputKeyedMinimized.json',
-    JSON.stringify(keyedTerraforms)
+    `metadata/tokens/${terraform.tokenId}.json`,
+    JSON.stringify(terraform)
   );
 };
 
@@ -68,33 +40,16 @@ const throttledPromises = (
     const batches = split(items, batchSize);
     await asyncForEach(batches, async (batch) => {
       const promises = batch.map(asyncFunction).map((p) => p.catch(reject));
-      const results = await Promise.all(promises);
+      const results = (await Promise.all(promises)).reduce((arr, item) => {
+        if (!item) return arr;
+        return arr.concat(item);
+      }, []);
       output.push(...results);
-      write(terraforms.concat(output).concat(results));
       await delayMS(delay);
     });
     resolve(output);
   });
 };
-
-export interface NormalizedTerraform {
-  biome: string;
-  chroma: string;
-  elevation: string;
-  level: string;
-  mode: string;
-  questionMarks: string;
-  seedValue: string;
-  structureSpaceX: string;
-  structureSpaceY: string;
-  structureSpaceZ: string;
-  tokenId: number;
-  xCoordinate: string;
-  yCoordinate: string;
-  zoneName: string;
-  zoneColors: string[];
-  characterSet: string[];
-}
 
 const fetchData = async (i: number) => {
   const metadataContract = new Contract(
@@ -106,16 +61,22 @@ const fetchData = async (i: number) => {
   const tokenIdBN = await contract.tokenByIndex(i);
   const tokenId = parseInt(parseBigNumber(tokenIdBN, 0, 0));
 
-  const tokenHTML = await contract.tokenHTML(tokenId);
-  const seedMatches = tokenHTML.match(/SEED=(.*?);/);
-  const seedValue = seedMatches[1];
+  const contractCalls = await Promise.all([
+    contract.tokenHTML(tokenId),
+    metadataContract.tokenURI(tokenId),
+  ]);
 
-  const metadata64 = (await metadataContract.tokenURI(tokenId)).replace(
-    'data:application/json;base64,',
-    ''
-  );
-  const metadataBuffer = Buffer.from(metadata64, 'base64');
-  const { attributes } = JSON.parse(metadataBuffer.toString('utf-8'));
+  const normalizedTokenData = await normalizeTokenData(contractCalls);
+  const {
+    attributes,
+    fontFamily,
+    fontString,
+    name,
+    seedValue,
+    tokenHTML,
+    tokenSVG,
+  } = normalizedTokenData;
+
   const { mode, biome, chroma, questionMarks } = attributes.reduce(
     (attrs, attr) => {
       if (attr.trait_type === 'Mode') {
@@ -156,6 +117,10 @@ const fetchData = async (i: number) => {
 
   return {
     tokenId,
+    name,
+    biome,
+    mode,
+    chroma,
     level: parseBigNumber(level, 0, 0),
     elevation: parseBigNumber(elevation, 0, 0),
     zoneName,
@@ -165,25 +130,17 @@ const fetchData = async (i: number) => {
     structureSpaceZ: parseBigNumber(structureSpaceZ, 0, 0),
     xCoordinate: parseBigNumber(xCoordinate, 0, 0),
     yCoordinate: parseBigNumber(yCoordinate, 0, 0),
-    biome,
-    mode,
-    chroma,
-    questionMarks,
     zoneColors,
     characterSet,
+    questionMarks,
+    tokenHTML: Buffer.from(tokenHTML).toString('base64'),
+    tokenSVG: Buffer.from(tokenSVG).toString('base64'),
+    fontFamily: Buffer.from(fontFamily).toString('base64'),
+    fontString: Buffer.from(fontString).toString('base64'),
   };
 };
 
 (async () => {
-  try {
-    const savedForms = fs.readFileSync('output.json').toString('utf-8');
-    const terraformsJson = JSON.parse(savedForms);
-    console.log(terraformsJson);
-    console.log(`Found ${terraformsJson.length} saved!`);
-    terraforms = terraformsJson as unknown as Array<NormalizedTerraform>;
-  } catch (err) {
-    console.log('Did not find existing terraforms');
-  }
   try {
     const contract = new Contract(TERRAFORMS_ADDRESS, Terraforms_ABI, provider);
 
@@ -200,14 +157,16 @@ const fetchData = async (i: number) => {
       async (i: number) => {
         try {
           const data = await fetchData(i);
+          write(data);
           return data;
         } catch {
+          console.log(`Failed to fetch ${i}`);
           failedIndexes.push(i);
         }
       },
       items,
-      5,
-      1000
+      20,
+      100
     );
     // @ts-ignore
     terraforms = terraforms.concat(nextTerraforms);
@@ -217,18 +176,31 @@ const fetchData = async (i: number) => {
       try {
         const terraform = await fetchData(terraformIndex);
         if (!terraform) throw new Error('Must fetch terraform');
-        terraforms = terraforms.concat();
+        write(terraform);
+        terraforms = terraforms.concat(terraform);
       } catch {
         failedIndexes.push(terraformIndex);
       }
     }
+
+    const terraformsIndex = terraforms.reduce((obj, item) => {
+      return {
+        ...obj,
+        [item.tokenId]: `tokens/${item.tokenId}.json`,
+      };
+    }, []);
+
+    fs.writeFileSync(
+      'metadata/index.json',
+      JSON.stringify(terraformsIndex, null, 2)
+    );
 
     if (terraforms.length !== totalSupply) {
       console.log('LENGTHS DONT MATCH');
       console.log(`local: ${terraforms.length}`);
       console.log(`supply: ${totalSupply}`);
     }
-    write(terraforms);
+
     console.log('Job complete!');
   } catch (err) {
     console.log(err);

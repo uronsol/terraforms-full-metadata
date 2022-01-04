@@ -53,3 +53,45 @@ export const throttledPromises = (
     resolve(output);
   });
 };
+
+export const normalizeMetadata = (tokenURIResponse: string) => {
+  const metadata64 = tokenURIResponse.replace(
+    'data:application/json;base64,',
+    ''
+  );
+  const metadataBuffer = Buffer.from(metadata64, 'base64');
+  const jsonData = JSON.parse(metadataBuffer.toString('utf-8'));
+  return jsonData;
+};
+
+export const normalizeTokenData = (tokenData: [string, string]) => {
+  const tokenHTML = tokenData[0];
+  const tokenMetadata = tokenData[1];
+
+  const fontMatches = tokenHTML.match(
+    /<style>(@font-face {font-family:\'(M.*)\'.*format\(.*?;})/
+  );
+  let fontString = '';
+  if (fontMatches[1]) {
+    fontString = fontString.concat(fontMatches[1]);
+  }
+  const fontFamily = fontMatches[2];
+  const seedMatches = tokenHTML.match(/SEED=(.*?);/);
+  const seedValue = seedMatches[1];
+
+  const {
+    name,
+    image: tokenSVG,
+    attributes,
+  } = normalizeMetadata(tokenMetadata);
+
+  return {
+    attributes,
+    fontFamily,
+    fontString,
+    name,
+    seedValue,
+    tokenHTML,
+    tokenSVG,
+  };
+};
