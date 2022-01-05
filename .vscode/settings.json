@@ -11,5 +11,6 @@
     "source.fixAll.eslint": true
   },
   "prettier.requireConfig": true,
-  "prettier.singleQuote": true
+  "prettier.singleQuote": true,
+  "git.ignoreLimitWarning": true
 }

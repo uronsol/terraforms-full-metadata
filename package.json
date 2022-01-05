@@ -8,9 +8,9 @@
   "scripts": {
     "classes": "ts-node supplemental/createClasses.ts",
     "compile-contract-types": "typechain --target ethers-v5 --out-dir './contracts/types' './contracts/*.json'",
+    "ipfs": "ts-node ipfs.ts",
+    "ipfsArray": "ts-node test.ts",
     "lint": "eslint --ext .ts,.tsx --fix",
-    "normalize": "ts-node normalize.ts",
-    "subgraph": "ts-node supplemental/querySubgraph.ts",
     "postinstall": "yarn compile-contract-types",
     "prettier": "prettier --write .",
     "start": "ts-node index.ts"
@@ -23,6 +23,7 @@
     "cross-fetch": "^3.1.4",
     "dotenv": "^10.0.0",
     "graphql": "16.2.0",
+    "ipfs-http-client": "^55.0.0",
     "urql": "2.0.6"
   },
   "devDependencies": {

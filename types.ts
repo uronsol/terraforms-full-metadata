@@ -1,22 +1,26 @@
-export interface NormalizedTerraform {
-  biome: string;
-  chroma: string;
-  elevation: string;
-  level: string;
-  mode: string;
-  questionMarks: string;
-  seedValue: string;
+export interface RenderData {
+  fontFamily: string;
+  fontString: string;
   structureSpaceX: string;
   structureSpaceY: string;
   structureSpaceZ: string;
-  tokenId: number;
-  xCoordinate: string;
-  yCoordinate: string;
-  zoneName: string;
-  zoneColors: string[];
-  characterSet: string[];
   tokenHTML: string;
   tokenSVG: string;
-  fontFamily: string;
-  fontString: string;
+}
+
+export interface NormalizedTerraform {
+  tokenId: number;
+  level: string;
+  zoneName: string;
+  biome: string;
+  chroma: string;
+  mode: string;
+  elevation: string;
+  seedValue: string;
+  xCoordinate: string;
+  yCoordinate: string;
+  characterSet: string;
+  zoneColors: string;
+  questionMarks: string;
+  renderData?: RenderData;
 }

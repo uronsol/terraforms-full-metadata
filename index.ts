@@ -23,6 +23,14 @@ const failedIndexes: Array<number> = [];
 export const TERRAFORMS_ADDRESS = '0x4E1f41613c9084FdB9E34E11fAE9412427480e56';
 
 const write = (terraform: NormalizedTerraform) => {
+  const renderData = terraform.renderData;
+  if (renderData) {
+    delete terraform['renderData'];
+    fs.writeFileSync(
+      `metadata/tokens/${terraform.tokenId}-render.json`,
+      JSON.stringify(renderData)
+    );
+  }
   fs.writeFileSync(
     `metadata/tokens/${terraform.tokenId}.json`,
     JSON.stringify(terraform)
@@ -125,18 +133,20 @@ const fetchData = async (i: number) => {
     elevation: parseBigNumber(elevation, 0, 0),
     zoneName,
     seedValue,
-    structureSpaceX: parseBigNumber(structureSpaceX, 0, 0),
-    structureSpaceY: parseBigNumber(structureSpaceY, 0, 0),
-    structureSpaceZ: parseBigNumber(structureSpaceZ, 0, 0),
     xCoordinate: parseBigNumber(xCoordinate, 0, 0),
     yCoordinate: parseBigNumber(yCoordinate, 0, 0),
-    zoneColors,
-    characterSet,
     questionMarks,
-    tokenHTML: Buffer.from(tokenHTML).toString('base64'),
-    tokenSVG: Buffer.from(tokenSVG).toString('base64'),
-    fontFamily: Buffer.from(fontFamily).toString('base64'),
-    fontString: Buffer.from(fontString).toString('base64'),
+    characterSet: characterSet.join('|-|'),
+    zoneColors: zoneColors.join('|-|'),
+    renderData: {
+      fontFamily: Buffer.from(fontFamily).toString('base64'),
+      fontString: Buffer.from(fontString).toString('base64'),
+      structureSpaceX: parseBigNumber(structureSpaceX, 0, 0),
+      structureSpaceY: parseBigNumber(structureSpaceY, 0, 0),
+      structureSpaceZ: parseBigNumber(structureSpaceZ, 0, 0),
+      tokenHTML: Buffer.from(tokenHTML).toString('base64'),
+      tokenSVG: Buffer.from(tokenSVG).toString('base64'),
+    },
   };
 };
 
@@ -165,8 +175,8 @@ const fetchData = async (i: number) => {
         }
       },
       items,
-      20,
-      100
+      50,
+      50
     );
     // @ts-ignore
     terraforms = terraforms.concat(nextTerraforms);
@@ -186,9 +196,12 @@ const fetchData = async (i: number) => {
     const terraformsIndex = terraforms.reduce((obj, item) => {
       return {
         ...obj,
-        [item.tokenId]: `tokens/${item.tokenId}.json`,
+        [item.tokenId]: {
+          token: `tokens/${item.tokenId}.json`,
+          renderData: `tokens/${item.tokenId}-render.json`,
+        },
       };
-    }, []);
+    }, {});
 
     fs.writeFileSync(
       'metadata/index.json',
