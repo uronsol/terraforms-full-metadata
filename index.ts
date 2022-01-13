@@ -75,15 +75,8 @@ const fetchData = async (i: number) => {
   ]);
 
   const normalizedTokenData = await normalizeTokenData(contractCalls);
-  const {
-    attributes,
-    fontFamily,
-    fontString,
-    name,
-    seedValue,
-    tokenHTML,
-    tokenSVG,
-  } = normalizedTokenData;
+  const { attributes, fontFamily, fontString, name, seedValue } =
+    normalizedTokenData;
 
   const { mode, biome, chroma, questionMarks } = attributes.reduce(
     (attrs, attr) => {
@@ -138,14 +131,12 @@ const fetchData = async (i: number) => {
     questionMarks,
     characterSet: characterSet.join('|-|'),
     zoneColors: zoneColors.join('|-|'),
+    structureSpaceX: parseBigNumber(structureSpaceX, 0, 0),
+    structureSpaceY: parseBigNumber(structureSpaceY, 0, 0),
+    structureSpaceZ: parseBigNumber(structureSpaceZ, 0, 0),
     renderData: {
       fontFamily: Buffer.from(fontFamily).toString('base64'),
       fontString: Buffer.from(fontString).toString('base64'),
-      structureSpaceX: parseBigNumber(structureSpaceX, 0, 0),
-      structureSpaceY: parseBigNumber(structureSpaceY, 0, 0),
-      structureSpaceZ: parseBigNumber(structureSpaceZ, 0, 0),
-      tokenHTML: Buffer.from(tokenHTML).toString('base64'),
-      tokenSVG: Buffer.from(tokenSVG).toString('base64'),
     },
   };
 };

@@ -79,11 +79,7 @@ export const normalizeTokenData = (tokenData: [string, string]) => {
   const seedMatches = tokenHTML.match(/SEED=(.*?);/);
   const seedValue = seedMatches[1];
 
-  const {
-    name,
-    image: tokenSVG,
-    attributes,
-  } = normalizeMetadata(tokenMetadata);
+  const { name, attributes } = normalizeMetadata(tokenMetadata);
 
   return {
     attributes,
@@ -91,7 +87,5 @@ export const normalizeTokenData = (tokenData: [string, string]) => {
     fontString,
     name,
     seedValue,
-    tokenHTML,
-    tokenSVG,
   };
 };

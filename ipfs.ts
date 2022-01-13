@@ -19,6 +19,15 @@ const ipfs = create({
   },
 });
 
+const chunk = (resultArray, item, index) => {
+  const chunkIndex = Math.floor(index / 1000);
+  if (!resultArray[chunkIndex]) {
+    resultArray[chunkIndex] = [];
+  }
+  resultArray[chunkIndex].push(item);
+  return resultArray;
+};
+
 interface RootIPFS {
   tokensByIndex?: string;
   renderDataByIndex?: string;
@@ -118,33 +127,53 @@ interface RootIPFS {
     JSON.stringify(uploadedRenderData, null, 2)
   );
 
-  const tokenHashArray: string[] = [];
+  const tokenArray: string[] = [];
   const renderDataArray: string[] = [];
 
   for (let i = 0; i < Object.keys(uploadedTokens).length; i++) {
     const index = `${i + 1}`;
     const token = uploadedTokens[index];
     const renderData = uploadedRenderData[index];
-    tokenHashArray.push(token);
+    tokenArray.push(token);
     renderDataArray.push(renderData);
   }
 
-  fs.writeFileSync(
-    'metadata/ipfs/tokensAsArray.json',
-    JSON.stringify(tokenHashArray)
-  );
-  fs.writeFileSync(
-    'metadata/ipfs/renderDataAsArray.json',
-    JSON.stringify(renderDataArray)
-  );
+  const tokenArrayChunks = tokenArray.reduce(chunk, []);
+  const renderDataHashArrayChunks = renderDataArray.reduce(chunk, []);
+
+  for (let i = 0; i < tokenArrayChunks.length; i++) {
+    fs.writeFileSync(
+      `metadata/ipfs/tokenArrays/${i}.json`,
+      JSON.stringify(tokenArrayChunks[i])
+    );
+    fs.writeFileSync(
+      `metadata/ipfs/renderDataArrays/${i}.json`,
+      JSON.stringify(renderDataHashArrayChunks[i])
+    );
+  }
+
+  const tokenArrayIPFSHashes = [];
+  const renderDataArrayIPFSHashes = [];
+  while (tokenArrayIPFSHashes.length !== tokenArrayChunks.length) {
+    const index = tokenArrayIPFSHashes.length;
+    try {
+      const addedTokenArray = await ipfs.add(tokenArrayChunks[index]);
+      await ipfs.pin.add(addedTokenArray.cid);
+      const addedRenderDataArray = await ipfs.add(
+        renderDataHashArrayChunks[index]
+      );
+      await ipfs.pin.add(addedRenderDataArray.cid);
+      tokenArrayIPFSHashes.push(addedTokenArray.path);
+      renderDataArrayIPFSHashes.push(addedRenderDataArray.path);
+      console.log(`Uploaded array index ${index}`);
+    } catch (err) {
+      console.log(`Failed to upload array index ${index}`);
+    }
+  }
 
   const tokensByIndexFile = fs.readFileSync('metadata/ipfs/tokensByIndex.json');
   const renderDataByIndexFile = fs.readFileSync(
     'metadata/ipfs/renderDataByIndex.json'
-  );
-  const tokensAsArrayFile = fs.readFileSync('metadata/ipfs/tokensAsArray.json');
-  const renderDataAsArrayFile = fs.readFileSync(
-    'metadata/ipfs/renderDataAsArray.json'
   );
   const rootFiles: RootIPFS = {};
   while (!rootFiles.tokensByIndex) {
@@ -167,26 +196,8 @@ interface RootIPFS {
       console.log('Failed to upload renderDataByIndex');
     }
   }
-  while (!rootFiles.tokensAsArray) {
-    try {
-      const added = await ipfs.add(tokensAsArrayFile);
-      await ipfs.pin.add(added.cid);
-      rootFiles['tokensAsArray'] = added.path;
-      console.log(`Uploaded tokensAsArray`);
-    } catch (err) {
-      console.log('Failed to upload tokensAsArray');
-    }
-  }
-  while (!rootFiles.renderDataAsArray) {
-    try {
-      const added = await ipfs.add(renderDataAsArrayFile);
-      await ipfs.pin.add(added.cid);
-      rootFiles['renderDataAsArray'] = added.path;
-      console.log(`Uploaded renderDataAsArray`);
-    } catch (err) {
-      console.log('Failed to upload renderDataAsArray');
-    }
-  }
+  rootFiles['tokensArraysAsIPFSArray'] = tokenArrayIPFSHashes;
+  rootFiles['renderDataArraysAsIPFSArray'] = renderDataArrayIPFSHashes;
   fs.writeFileSync(
     'metadata/ipfs/index.json',
     JSON.stringify(rootFiles, null, 2)

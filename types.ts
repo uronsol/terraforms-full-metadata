@@ -1,11 +1,6 @@
 export interface RenderData {
   fontFamily: string;
   fontString: string;
-  structureSpaceX: string;
-  structureSpaceY: string;
-  structureSpaceZ: string;
-  tokenHTML: string;
-  tokenSVG: string;
 }
 
 export interface NormalizedTerraform {
@@ -22,5 +17,8 @@ export interface NormalizedTerraform {
   characterSet: string;
   zoneColors: string;
   questionMarks: string;
+  structureSpaceX: string;
+  structureSpaceY: string;
+  structureSpaceZ: string;
   renderData?: RenderData;
 }

@@ -1,6 +1,28 @@
 {
-  "tokensByIndex": "Qmay14rRqjBTWcJyB74C5wte22GSrJbqgVvMTesCt889iA",
-  "renderDataByIndex": "QmUYusGpaopXfnocJcHD62LpGj8SieAw4tLYxAAXgqSGH2",
-  "tokensAsArray": "Qmb4T1ULA5Q9WoJ4LedyE5sWKtoyn5FJV2bvfxjBfM3pHt",
-  "renderDataAsArray": "QmV1vkvQJRxUFeVR2Yf6Xp3Q3inTZWyRReejZp3x8fVxEx"
+  "tokensByIndex": "QmTzb2Bsfv5M8yp2i8UgJdFcXx1WWgwuuQky7UtFaoXWHn",
+  "renderDataByIndex": "QmY7sAWv7Hkoz2cbPd4q58eK9HQ9QAdwoRiyU8nkhVSmvw",
+  "tokensArraysAsIPFSArray": [
+    "QmaJQyXifEH6BRt6tLksGYLqjkUqADo5v3dEffo25FnMx3",
+    "QmcrwHLtWXstMyKC4n1kmDjXQyd5VFosFK5Kotv2fbDZeV",
+    "QmPYfSXdadmQW3wBwqFCnB3HWsKh56AgQQhBd4nNJ95cxY",
+    "QmVB8H2s9qfmZ3rbgMCsFF4NtgWwRgRYzdaSKBFuJDhq7u",
+    "QmdCfSR59zbAZHi5ph3ZNamatPsc6ewHt3WKgRu2qdXyy9",
+    "QmVjdEVWSf26tFJxHNZtRpJQyqztNU2aKbxKGzDbK3ECjH",
+    "QmSwyRkKM9DJ2mGAcxyH78zHHvKDHiEHHBxcHK4M8Y51cB",
+    "QmUcLBRuemPyTNMfLsRNJp3H3re4s8qP2JxXfRpeibHx7X",
+    "QmXdkDZ1dvsBv3YpqHyh2Ztaf1F2cAWDZEU1xYYExCyqCX",
+    "QmZJhDiWsj9QtoJScZovfaYqcLYe3aVtU3UUN4GhTKYNBm"
+  ],
+  "renderDataArraysAsIPFSArray": [
+    "QmSfK2DfBqvpbuDXS6JpEFkTvXtLQaehDM5LZaKkciXFmo",
+    "QmXt1FgpDM9fuCW87H2sZaeMFCrQ6eqhDBsaSjFojTwZJ3",
+    "QmTJk8k24xsrGb1XZfUR99EGPJw2LNpomzprvEMNv38Jjo",
+    "QmPhDaawAdtFxsf64WJEuVG4FLEHvG8u1uobwgiyEUTH7W",
+    "QmT8jRz7dbRmWjVw526QpRba7DSBSYSaJ3F9cerwTTgcuY",
+    "QmVVUjjiBBjhBDtS1D6ZLpmVqnRJkhuVUA8dHaJWwRZf87",
+    "QmX6vJJB7wXvmdHiBosvoPZbNyh83yv5TGqEB4xfcxLLqB",
+    "Qma6y6uxfw9aDJTsF1YX226duLW3h464Q1fUY3HCG9Em8c",
+    "QmfWgFry5cgzuTsE2gNVtNNrhG6qBeUCpVfx2NdwpWKBhU",
+    "QmNij2J5tfxCY3617mthWf5S1hNuNYpw1g9Q5sf2fF6jYy"
+  ]
 }
